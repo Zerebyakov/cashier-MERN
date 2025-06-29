@@ -68,7 +68,7 @@ function App() {
           }
         />
         <Route
-          path="/admin/users/:id"
+          path="/admin/users/:uuid"
           element={
             <AdminRoute>
               <EditUser />

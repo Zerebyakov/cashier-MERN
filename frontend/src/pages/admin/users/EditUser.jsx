@@ -10,7 +10,7 @@ const EditUser = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confPassword, setConfPassword] = useState()
-    const { id } = useParams();
+    const { id, uuid } = useParams();
     const navigate = useNavigate()
     const [role, setRole] = useState('')
 
@@ -20,20 +20,20 @@ const EditUser = () => {
     }, [])
 
     const getUserById = async () => {
-        const response = await axios.get(myApi + `/users/${id}`, {
+        const response = await axios.get(myApi + `/users/${uuid}`, {
             withCredentials: true
         })
         console.log(response.data);
         setName(response.data.name)
         setEmail(response.data.email)
-        setPassword(response.data.password)
-        setConfPassword(response.data.confPassword)
+        setPassword('')
+        setConfPassword('')
         setRole(response.data.role)
     }
     const updateUser = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(myApi + `/users/${id}`, {
+            await axios.patch(myApi + `/users/${uuid}`, {
                 name,
                 email,
                 password,
@@ -42,8 +42,9 @@ const EditUser = () => {
             }, {
                 withCredentials: true
             })
+            navigate('/admin/users')
         } catch (error) {
-            console, log(error.message)
+            console.log(error.message)
 
         }
     }
@@ -52,7 +53,7 @@ const EditUser = () => {
             <form class="max-w-sm mx-auto" onSubmit={updateUser}>
                 <div class="mb-5">
                     <label for="small-input" class="block mb-2 text-sm font-medium text-gray-900 ">Name Product </label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} type="text" id="small-input" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500  dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                    <input value={name} onChange={(e) => setName(e.target.value)} type="text"  class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500  dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
                 <div class="mb-5">
                     <label for="small-input" class="block mb-2 text-sm font-medium text-gray-900 ">Password</label>
@@ -64,11 +65,11 @@ const EditUser = () => {
                 </div>
                 <div class="mb-5">
                     <label for="small-input" class="block mb-2 text-sm font-medium text-gray-900 ">Email</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" id="small-input" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500  dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                    <input value={email} onChange={(e) => setEmail(e.target.value)} type="text"  class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500  dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                 </div>
                 <div className='mb-5'>
                     <label for="countries" class="block mb-2 text-sm font-medium text-gray-900">Role</label>
-                    <input value={role} onChange={(e) => setRole(e.target.value)} type="text" id="small-input" class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500  dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500" readOnly/>
+                    <input value={role} onChange={(e) => setRole(e.target.value)} type="text"  class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500  dark:placeholder-gray-400  dark:focus:ring-blue-500 dark:focus:border-blue-500" readOnly/>
 
                 </div>
                 <div className='mb-5'>
