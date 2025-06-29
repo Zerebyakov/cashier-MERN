@@ -7,6 +7,7 @@ import Category from "./pages/admin/category/Category";
 import Users from "./pages/admin/users/Users";
 import { useAuth } from './context/AuthContext';
 import EditProduct from './pages/admin/product/EditProduct';
+import EditUser from './pages/admin/users/EditUser';
 
 
 
@@ -63,6 +64,14 @@ function App() {
           element={
             <AdminRoute>
               <Users />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users/:id"
+          element={
+            <AdminRoute>
+              <EditUser />
             </AdminRoute>
           }
         />
