@@ -8,6 +8,9 @@ import Users from "./pages/admin/users/Users";
 import { useAuth } from './context/AuthContext';
 import EditProduct from './pages/admin/product/EditProduct';
 import EditUser from './pages/admin/users/EditUser';
+import History from './pages/cashier/history/History';
+import ProductsList from './pages/cashier/products/ProductsList';
+import About from './pages/cashier/about/About';
 
 
 
@@ -18,6 +21,12 @@ function App() {
     if (loading) return <div className="p-6">Loading...</div>;
     if (!user) return <Navigate to="/login" />;
     if (user.role !== 'admin') return <Navigate to="/login" />;
+    return children;
+  };
+  const CashierRoute = ({ children }) => {
+    if (loading) return <div className="p-6">Loading...</div>;
+    if (!user) return <Navigate to="/login" />;
+    if (user.role !== 'cashier') return <Navigate to="/login" />;
     return children;
   };
 
@@ -73,6 +82,39 @@ function App() {
             <AdminRoute>
               <EditUser />
             </AdminRoute>
+          }
+        />
+        {/* CASHIER ROUTE */}
+        <Route
+          path="/cashier/dashboard"
+          element={
+            <CashierRoute>
+              <CashierDashboard />
+            </CashierRoute>
+          }
+        />
+        <Route
+          path="/cashier/history"
+          element={
+            <CashierRoute>
+              <History />
+            </CashierRoute>
+          }
+        />
+        <Route
+          path="/cashier/products"
+          element={
+            <CashierRoute>
+              <ProductsList />
+            </CashierRoute>
+          }
+        />
+        <Route
+          path="/cashier/about"
+          element={
+            <CashierRoute>
+              <About />
+            </CashierRoute>
           }
         />
 
