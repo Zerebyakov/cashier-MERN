@@ -5,7 +5,7 @@ const Navbar = () => {
     const location = useLocation()
     const navItems = [
         { label: "HOME", path: '/cashier/dashboard' },
-        { label: "HISTORY TRANSACTION", path: '/cashier/history' },
+        { label: "HISTORY", path: '/cashier/history' },
         { label: "PRODUCTS", path: '/cashier/products' },
         { label: "ABOUT", path: '/cashier/about' },
     ]

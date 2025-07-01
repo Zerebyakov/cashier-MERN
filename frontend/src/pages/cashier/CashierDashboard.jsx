@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router';
 import CashierLayout from './layout/CashierLayout';
 import Cashier from './components/Cashier';
+import SplitText from '../admin/animation/SplitText';
+
 
 const CashierDashboard = () => {
     const { user, logout } = useAuth();
@@ -23,23 +25,37 @@ const CashierDashboard = () => {
                     </div>
                     <div class="w-full">
                         <h1 className="text-5xl font-bold mb-6">Kasir Kita</h1>
-                        <p className='text-xl mb-10'>Welcome, {user?.name}</p>
+                        <SplitText
+                            text={`Welcome, ${user?.name}`}
+                            className="text-xl mb-10"
+                            delay={100}
+                            duration={0.6}
+                            ease="power3.out"
+                            splitType="chars"
+                            from={{ opacity: 0, y: 40 }}
+                            to={{ opacity: 1, y: 0 }}
+                            threshold={0.1}
+                            rootMargin="-100px"
+                            textAlign="center"
+                        />
+                        {/* <p className='text-xl mb-10'>Welcome, {user?.name}</p> */}
                     </div>
                     <span class="sr-only">Loading...</span>
                 </div>
-                <div>
+                <div className='flex justify-between'>
 
-                    <button onClick={handleLogout} className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    <button onClick={handleLogout} className="mt-4 focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
                         Logout
                     </button>
+                    
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-black text-white px-6 py-2 rounded-full transition-all"
+                        className="bg-black text-white px-6 py-2 rounded-full transition-all order-last"
                     >
                         TRANSAKSI
                     </button>
                 </div>
-                <Cashier isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}  />
+                <Cashier isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
             </div>
             <div>
 
