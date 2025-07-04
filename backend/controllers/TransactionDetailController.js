@@ -4,16 +4,60 @@ import Transactions from "../models/Transaction.js";
 
 
 
+
 export const getAllTransactionDetails = async (req, res) => {
     try {
-        const details = await TransactionDetails.findAll({
+        const {
+            page = 1,
+            limit = 10,
+            sort = 'createdAt',
+            order = 'desc',
+            search = '',
+            startDate,
+            endDate
+        } = req.query;
+
+        const offset = (page - 1) * limit;
+
+        const whereClause = {};
+
+        // Filter berdasarkan tanggal transaksi
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        // Pencarian pada nama produk
+        const productWhere = {};
+        if (search) {
+            productWhere.name = { [Op.like]: `%${search}%` };
+        }
+
+        const { count, rows } = await TransactionDetails.findAndCountAll({
+            where: whereClause,
             include: [
-                { model: Products },
-                { model: Transactions }
-            ]
+                {
+                    model: Products,
+                    where: productWhere
+                },
+                {
+                    model: Transactions
+                }
+            ],
+            order: [[sort, order]],
+            limit: parseInt(limit),
+            offset: parseInt(offset)
         });
-        res.status(200).json(details);
+
+        res.status(200).json({
+            totalData: count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
+            data: rows
+        });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Gagal mengambil data detail transaksi' });
     }
 };
