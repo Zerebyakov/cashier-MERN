@@ -1,7 +1,7 @@
 import TransactionDetails from "../models/TransactionDetails.js";
 import Products from "../models/Products.js";
 import Transactions from "../models/Transaction.js";
-
+import { Op, Sequelize } from "sequelize";
 
 
 
@@ -19,33 +19,38 @@ export const getAllTransactionDetails = async (req, res) => {
 
         const offset = (page - 1) * limit;
 
-        const whereClause = {};
-
-        // Filter berdasarkan tanggal transaksi
+        // Buat filter untuk tanggal transaksi
+        const transactionWhere = {};
         if (startDate && endDate) {
-            whereClause.createdAt = {
+            transactionWhere.createdAt = {
                 [Op.between]: [new Date(startDate), new Date(endDate)]
             };
         }
 
-        // Pencarian pada nama produk
+        // Buat filter pencarian nama produk
         const productWhere = {};
         if (search) {
-            productWhere.name = { [Op.like]: `%${search}%` };
+            productWhere.name = {
+                [Op.like]: `%${search}%`
+            };
         }
 
+        // Dapatkan semua data transaksi yang sesuai filter (pagination + count)
         const { count, rows } = await TransactionDetails.findAndCountAll({
-            where: whereClause,
+            where: {}, // kosong karena filter di dalam include
             include: [
                 {
                     model: Products,
-                    where: productWhere
+                    where: productWhere,
+                    required: false
                 },
                 {
-                    model: Transactions
+                    model: Transactions,
+                    where: transactionWhere,
+                    required: true
                 }
             ],
-            order: [[sort, order]],
+            order: [[Sequelize.col(sort), order]], // aman untuk sort relasi
             limit: parseInt(limit),
             offset: parseInt(offset)
         });
@@ -61,7 +66,6 @@ export const getAllTransactionDetails = async (req, res) => {
         res.status(500).json({ error: 'Gagal mengambil data detail transaksi' });
     }
 };
-
 
 export const getTransactionDetailsByTransactionId = async (req, res) => {
     const { transaction_id } = req.params;
@@ -97,5 +101,63 @@ export const createTransactionDetail = async (req, res) => {
         res.status(201).json(detail);
     } catch (err) {
         res.status(500).json({ error: 'Gagal menambahkan detail transaksi' });
+    }
+};
+
+
+// GET /transactions-summary
+export const getTransactionSummary = async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 10,
+            sort = 'createdAt',
+            order = 'desc',
+            startDate,
+            endDate
+        } = req.query;
+
+        const offset = (page - 1) * limit;
+
+        const transactionWhere = {};
+        if (startDate && endDate) {
+            transactionWhere.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+        const { count, rows } = await Transactions.findAndCountAll({
+            where: transactionWhere,
+            include: [
+                {
+                    model: TransactionDetails,
+                    include: [Products]
+                }
+            ],
+            distinct: true, // ✅ ini penting untuk hitung transaksi unik
+            order: [[sort, order]],
+            limit: parseInt(limit),
+            offset: parseInt(offset)
+        });
+
+
+        const mappedData = rows.map((transaction) => {
+            const totalItems = transaction.transaction_details.reduce((sum, item) => sum + item.quantity, 0);
+            return {
+                id: transaction.id,
+                createdAt: transaction.createdAt,
+                total_price: transaction.total_price,
+                totalItems
+            };
+        });
+
+        res.status(200).json({
+            totalData: count,
+            totalPages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
+            data: mappedData
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Gagal mengambil ringkasan transaksi' });
     }
 };

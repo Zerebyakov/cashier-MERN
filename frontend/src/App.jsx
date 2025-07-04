@@ -11,6 +11,7 @@ import EditUser from './pages/admin/users/EditUser';
 import History from './pages/cashier/history/History';
 import ProductsList from './pages/cashier/products/ProductsList';
 import About from './pages/cashier/about/About';
+import HistoryDetail from './pages/cashier/history/HistoryDetail';
 
 
 
@@ -114,6 +115,14 @@ function App() {
           element={
             <CashierRoute>
               <About />
+            </CashierRoute>
+          }
+        />
+        <Route
+          path="/cashier/history-detail/:transaction_id"
+          element={
+            <CashierRoute>
+              <HistoryDetail />
             </CashierRoute>
           }
         />

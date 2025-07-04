@@ -11,13 +11,19 @@ const ProductsList = () => {
   const [products, setProducts] = useState([])
 
   useEffect(() => {
-    if (categoryActive !== null) {
-      const filtered = products.filter(products => products.category?.id === categoryActive);
-      setFilteredProducts(filtered);
-    }
     getCategory();
     getProducts();
-  }, [categoryActive, products])
+  }, []);
+
+  // Filter produk saat categoryActive berubah
+  useEffect(() => {
+    if (categoryActive !== null) {
+      const filtered = products.filter(p => p.category?.id === categoryActive);
+      setFilteredProducts(filtered);
+    }
+  }, [categoryActive, products]);
+
+
   const getCategory = async () => {
     const response = await axios.get(myApi + '/category', {
       withCredentials: true
