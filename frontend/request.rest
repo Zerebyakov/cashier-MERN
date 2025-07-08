@@ -1,2 +1,0 @@
-# GET STATUS
-GET http://localhost:5000/me
