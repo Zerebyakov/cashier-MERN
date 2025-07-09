@@ -12,6 +12,7 @@ import History from './pages/cashier/history/History';
 import ProductsList from './pages/cashier/products/ProductsList';
 import About from './pages/cashier/about/About';
 import HistoryDetail from './pages/cashier/history/HistoryDetail';
+import HistoryReport from './pages/admin/history transaction/HistoryReport';
 
 
 
@@ -82,6 +83,14 @@ function App() {
           element={
             <AdminRoute>
               <EditUser />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/history-transaction"
+          element={
+            <AdminRoute>
+              <HistoryReport />
             </AdminRoute>
           }
         />

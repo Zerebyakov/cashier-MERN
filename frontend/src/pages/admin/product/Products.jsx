@@ -18,7 +18,7 @@ const Products = () => {
   const [search, setSearch] = useState('')
   const [totalPages, setTotalPages] = useState(1)
   const [showModalAdd, setShowModalAdd] = useState(false)
-
+  const [limit] = useState(10)
 
   // Pagination 
 
@@ -37,7 +37,7 @@ const Products = () => {
         order,
         sort,
         search,
-        limit: 10
+        limit: limit
       },
       withCredentials: true
     });
@@ -163,7 +163,7 @@ const Products = () => {
             {products.map((item, idx) => (
               <tr key={idx} className="bg-white border-b  border-gray-200">
                 <td className="px-6 py-4">
-                  {idx + 1}
+                  {(page - 1) * limit + idx + 1}
                 </td>
                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap ">
                   {item.name}
@@ -175,7 +175,7 @@ const Products = () => {
                   {item.stock}
                 </td>
                 <td className="px-6 py-4">
-                  {item.price}
+                  Rp. {item.price.toLocaleString('id-ID')}
                 </td>
                 <td className="px-6 py-4 space-x-4">
                   <Link to={`/admin/products/${item.id}`}>

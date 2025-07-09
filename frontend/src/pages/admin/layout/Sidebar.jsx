@@ -6,6 +6,7 @@ const Sidebar = () => {
         { name: 'Dashboard', path: '/admin/dashboard' },
         { name: 'Products', path: '/admin/products' },
         { name: 'Category', path: '/admin/categories' },
+        { name: 'History Transaction', path: '/admin/history-transaction' },
         { name: 'Users', path: '/admin/users' }
     ];
     return (
