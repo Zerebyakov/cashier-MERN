@@ -16,6 +16,9 @@ const Cashier = ({ isOpen, onClose }) => {
 
   const getProducts = async () => {
     const response = await axios.get(myApi + '/products', {
+      params:{
+        limit: 100 //change if the product does not appear in the table, 50 > bigger means increasing output
+      },
       withCredentials: true,
     });
     setProducts(response.data.data);
@@ -25,7 +28,7 @@ const Cashier = ({ isOpen, onClose }) => {
     .filter((product) =>
       product.name.toLowerCase().includes(search.toLocaleLowerCase())
     )
-    .slice(0, 10);
+    .slice(0, 100);
 
   const addToCart = (product) => {
     const exist = cart.find((item) => item.id === product.id);

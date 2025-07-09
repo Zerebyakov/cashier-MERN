@@ -33,6 +33,9 @@ const ProductsList = () => {
   }
   const getProducts = async () => {
     const response = await axios.get(myApi + '/products', {
+      params:{
+        limit: 50 //change if the product does not appear in the table, 50 > bigger means increasing output
+      },
       withCredentials: true
     })
     setProducts(response.data.data)
