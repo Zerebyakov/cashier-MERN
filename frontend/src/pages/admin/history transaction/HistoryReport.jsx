@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react'
 import AdminLayout from '../layout/AdminLayout'
 import axios from 'axios'
 import myApi from '../../api/Api'
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 
 const HistoryReport = () => {
     const [transactions, setTransactions] = useState([])
@@ -16,22 +19,25 @@ const HistoryReport = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
+    const [allDetails, setAllDetails] = useState([]);
+
 
     useEffect(() => {
         getHistoryTransaction();
     }, [currentPage, sort, order])
     const getHistoryTransaction = async () => {
         try {
-            const response = await axios.get(myApi + `/transactions-summary?page=${currentPage}&limit=${limit}&sort=${sort}&order=${order}`, {
-                withCredentials: true
-            })
-            setTransactions(response.data.data)
-            console.log(response.data.data)
-            setTotalPages(response.data.totalPages)
+            const response = await axios.get(
+                `${myApi}/transactions-summary?page=${currentPage}&limit=${limit}&sort=${sort}&order=${order}&startDate=${startDate}&endDate=${endDate}`,
+                { withCredentials: true }
+            );
+            setTransactions(response.data.data);
+            setTotalPages(response.data.totalPages);
         } catch (error) {
-            console.log(error.message)
+            console.log(error.message);
         }
-    }
+    };
+
     const handleToggleDetail = async (transaction_id) => {
         if (expandedRow === transaction_id) {
             setExpandedRow(null); // Collapse
@@ -49,6 +55,68 @@ const HistoryReport = () => {
         }
     };
 
+    const fetchAllDetails = async () => {
+        try {
+            const detailsData = [];
+
+            for (const trx of transactions) {
+                const response = await axios.get(`${myApi}/transaction-details/${trx.id}`, {
+                    withCredentials: true,
+                });
+
+                response.data.forEach((item) => {
+                    detailsData.push({
+                        TransactionID: trx.id,
+                        Date: new Date(trx.createdAt).toLocaleDateString(),
+                        Product: item.product?.name,
+                        Qty: item.quantity,
+                        'Unit Price': item.price_each,
+                        'Sub Total': item.subtotal,
+                    });
+                });
+            }
+
+            return detailsData;
+        } catch (error) {
+            console.error('Error fetching details:', error.message);
+            return [];
+        }
+    };
+
+
+    // EXCELL
+
+    const exportToExcelFull = async () => {
+        // Ringkasan transaksi
+        const summarySheet = transactions.map((trx, index) => ({
+            No: (currentPage - 1) * limit + index + 1,
+            TransactionID: trx.id,
+            Date: new Date(trx.createdAt).toLocaleDateString(),
+            'Total Items': trx.totalItems,
+            'Total Price (IDR)': trx.total_price
+        }));
+
+        // Detail transaksi
+        const detailSheet = await fetchAllDetails();
+
+        // Buat workbook
+        const workbook = XLSX.utils.book_new();
+
+        const worksheetSummary = XLSX.utils.json_to_sheet(summarySheet);
+        XLSX.utils.book_append_sheet(workbook, worksheetSummary, 'Transaction Summary');
+
+        const worksheetDetails = XLSX.utils.json_to_sheet(detailSheet);
+        XLSX.utils.book_append_sheet(workbook, worksheetDetails, 'Transaction Details');
+
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+
+        saveAs(blob, `Full_Transaction_Report_${new Date().toISOString().split("T")[0]}.xlsx`);
+    };
+
+
+
+
     return (
         <>
             <title>History</title>
@@ -58,30 +126,33 @@ const HistoryReport = () => {
 
                 </div>
                 <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-                    <div className='flex flex-row justify-between'>
-                        <div>
-                            <button type="button" className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Add Product</button>
-
-                        </div>
-                        <div className='order-last'>
-
-                            <form className="max-w-md w-full">
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Cari ..."
-                                        className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50"
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2"
-                                    >
-                                        Search
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="border p-2 rounded-md"
+                        />
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="border p-2 rounded-md"
+                        />
+                        <button
+                            onClick={() => getHistoryTransaction()}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                        >
+                            Filter
+                        </button>
+                        <button
+                            onClick={exportToExcelFull}
+                            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                        >
+                            Export Excel (Detail)
+                        </button>
                     </div>
+
                     <table className="w-full text-sm text-left rtl:text-right text-gray-500 ">
                         <caption className="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white ">
                             Our products
