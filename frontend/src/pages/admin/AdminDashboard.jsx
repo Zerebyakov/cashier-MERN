@@ -15,7 +15,9 @@ const AdminDashboard = () => {
   const [products, setProducts] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const monthlyTarget = 5000000; // Contoh: Rp 5.000.000 target bulanan
+  const [monthlyTarget, setMonthlyTarget] = useState(5000000);
+  const [monthlyOrdersData, setMonthlyOrdersData] = useState([]);
+
 
   const handleAnimationComplete = () => {
     console.log("All letters have animated!");
@@ -45,9 +47,38 @@ const AdminDashboard = () => {
     const response = await axios.get(myApi + `/transactions-summary`, {
       withCredentials: true,
     });
+
     setTotalOrders(response.data.totalData);
+
+    // Hitung total pendapatan
     const total = response.data.data.reduce((acc, trx) => acc + trx.total_price, 0);
     setTotalRevenue(total);
+
+    // Buat 12 bulan terakhir
+    const monthMap = {};
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = date.toLocaleString("id-ID", { month: "short", year: "numeric" });
+      monthMap[label] = 0;
+    }
+
+    // Isi data transaksi ke dalam map
+    response.data.data.forEach((trx) => {
+      const trxDate = new Date(trx.createdAt);
+      const label = trxDate.toLocaleString("id-ID", { month: "short", year: "numeric" });
+
+      if (monthMap[label] !== undefined) {
+        monthMap[label] += 1;
+      }
+    });
+
+    const formatted = Object.entries(monthMap).map(([month, orders]) => ({
+      month,
+      orders,
+    }));
+
+    setMonthlyOrdersData(formatted);
   };
 
 
@@ -76,7 +107,7 @@ const AdminDashboard = () => {
           <MonthlyTarget totalRevenue={totalRevenue} target={monthlyTarget} />
 
           <div className="lg:col-span-2">
-            <MonthlySalesChart data={data} />
+            <MonthlySalesChart data={monthlyOrdersData} />
           </div>
 
           <div className="w-full">
